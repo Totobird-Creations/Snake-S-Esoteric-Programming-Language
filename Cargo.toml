@@ -1,0 +1,8 @@
+[package]
+name    = "snake-shit"
+version = "0.1.0"
+authors = ["Totobird Creations"]
+edition = "2021"
+
+[dependencies]
+crossterm = "0.23.0"
