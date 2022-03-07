@@ -24,5 +24,6 @@ pub enum Command {
     Print(char),
     PrintLen,
 
-    NumberInput
+    NumberInput,
+    RandomInput(usize)
 }

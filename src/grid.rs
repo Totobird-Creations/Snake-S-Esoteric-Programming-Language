@@ -1,7 +1,10 @@
+use std::process;
 use std::io;
 use std::io::Write;
 use std::collections;
 use crossterm;
+use rand;
+use rand::Rng;
 
 use super::data;
 use super::snake;
@@ -66,11 +69,11 @@ impl Grid {
         if (matches!(self.get(self.snake.position.0, self.snake.position.1), None) || ! self.snake.alive) {
             return true;
         }
-        for tail in &self.snake.tails {
+        /*for tail in &self.snake.tails {
             if (*tail == self.snake.position) {
                 return true;
             }
-        }
+        }*/
         return false;
     }
 
@@ -109,7 +112,6 @@ impl Grid {
                 self.variables.insert(ch, self.snake.tails.len());
             },
             data::Command::ReadVariable(ch) => {
-                println!("{}", ch);
                 if (self.variables.contains_key(&ch)) {
                     self.snake.set_length(self.variables[&ch]);
                 } else {
@@ -117,38 +119,58 @@ impl Grid {
                 };
             },
             data::Command::NumberInput => {
-                let mut stdout = io::stdout();
                 let mut number = String::new();
-                let mut sigint = false;
                 crossterm::terminal::enable_raw_mode().unwrap();
                 loop {
-                    let ch = crossterm::event::read().unwrap());
-                    println!("{}", ch);
-                }
-                /*for key in stdin.keys() {
-                    match key.unwrap() {
-                        Key::Ctrl('c')  => {
-                            sigint = true;
-                            break;
-                        },
-                        Key::Char('\n') => break,
-                        Key::Char(ch)   => {
-                            if (NUMERIC.contains(ch)) {
-                                number += ch.to_string().as_str();
+                    match (crossterm::event::read().unwrap()) {
+                        crossterm::event::Event::Key(crossterm::event::KeyEvent {
+                            code      : crossterm::event::KeyCode::Enter,
+                            modifiers : crossterm::event::KeyModifiers::NONE
+                        }) => {
+                            if (number.len() >= 1) {
+                                break;
                             }
                         },
-                        Key::Backspace => {
-                            number = number[0..number.len() - 1].to_string();
+                        crossterm::event::Event::Key(crossterm::event::KeyEvent {
+                            code      : crossterm::event::KeyCode::Backspace,
+                            modifiers : crossterm::event::KeyModifiers::NONE
+                        }) => {
+                            if (number.len() >= 1) {
+                                number = number[0..number.len() - 1].to_string();
+                                print!("{} {}", (8u8 as char), (8u8 as char));
+                                io::stdout().flush().unwrap();
+                            }
+                        },
+                        crossterm::event::Event::Key(crossterm::event::KeyEvent {
+                            code      : crossterm::event::KeyCode::Char('c'),
+                            modifiers : crossterm::event::KeyModifiers::CONTROL
+                        }) => {
+                            crossterm::terminal::disable_raw_mode().unwrap();
+                            print!("^C");
+                            io::stdout().flush().unwrap();
+                            process::exit(1);
+                        },
+                        crossterm::event::Event::Key(crossterm::event::KeyEvent {
+                            code      : crossterm::event::KeyCode::Char(ch),
+                            modifiers : crossterm::event::KeyModifiers::NONE
+                        }) => {
+                            if (NUMERIC.contains(ch)) {
+                                number += ch.to_string().as_str();
+                                print!("{}", ch);
+                                io::stdout().flush().unwrap();
+                            }
                         },
                         _ => ()
-                    };
-                };*/
-                crossterm::terminal::disable_raw_mode().unwrap();
-                if (sigint) {
-                    panic!("Sigint signal received.");
+                    }
                 }
+                crossterm::terminal::disable_raw_mode().unwrap();
+                print!("\n");
+                io::stdout().flush().unwrap();
                 self.snake.set_length(number.parse::<usize>().unwrap());
             }
+            data::Command::RandomInput(range) => {
+                self.snake.set_length(rand::thread_rng().gen_range(0..range));
+            },
         }
     }
     
@@ -169,14 +191,14 @@ impl Grid {
                     '*' => data::Command::PrintLen,
                     '@' => data::Command::WriteVariable(self.argument_character(x + 1, y, false)),
                     '%' => data::Command::ReadVariable(self.argument_character(x + 1, y, false)),
-                    '?' => {
-                        let name = self.argument_character(x + 1, y, false);
-                        if (self.variables.contains_key(&name) && self.variables[&name] >= 1) {
-                            return self.get_command(x + 2, y);
+                    '~' => {
+                        if (self.snake.tails.len() >= 1) {
+                            return self.get_command(x + 1, y);
                         }
                         return data::Command::None;
                     },
                     '&' => data::Command::NumberInput,
+                    '?' => data::Command::RandomInput(self.argument_number(x + 1, y)),
                     _   => data::Command::None
                 }
             },

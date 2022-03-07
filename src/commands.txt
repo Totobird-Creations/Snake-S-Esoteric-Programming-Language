@@ -1,15 +1,18 @@
-$D  : Snake start position, start moving in direction1.
-+N  : Increase snake length by number1.
--N  : Decrease snake length by number1.
-=N  : Set snake length to number1.
-^   : Set snake direction to up.
->   : Set snake direction to right.
-v   : Set snake direction to down.
-<   : Set snake direction to left.
-@C  : Set variable chararacter1 to tail length.
-%C  : Set tail length to variable character1.
-?CE : If variable character1 is not 0, run command2.
-&   : Set snake length to number input.
+$D : Snake start position, start moving in direction1.
++N : Increase snake length by number1.
+-N : Decrease snake length by number1.
+=N : Set snake length to number1.
+^  : Set snake direction to up.
+>  : Set snake direction to right.
+v  : Set snake direction to down.
+<  : Set snake direction to left.
+@C : Set variable chararacter1 to tail length.
+%C : Set tail length to variable character1.
+~E : If tail length is not 0, run command1.
+&  : Set snake length to number input.
+?N : Set snake length to a random number between 0 (inclusive) and number1 (exclusive).
+#C : Print character1.
+*  : Print current length.
 
 
 
